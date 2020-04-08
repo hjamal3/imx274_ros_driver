@@ -1,6 +1,6 @@
 # IMX274-ROS-driver
 Currently setup with CTI Spacely carrier board and IMX274 from Leopard Imaging. 2 Camera setup. Can remove one camera in code.
-Copy into catkin_ws/src
+Copy mipi_cameras into catkin_ws/src
 Type catkin_make
 Type source devel/setup.bash
 
