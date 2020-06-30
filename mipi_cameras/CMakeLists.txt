@@ -41,18 +41,24 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(mipi_cam_node src/cameraNode.cpp)
-target_link_libraries(mipi_cam_node ${catkin_LIBRARIES})
-
-add_executable(mipi_cam_node_fast src/cameraNodeV2.cpp)
-target_link_libraries(mipi_cam_node_fast ${catkin_LIBRARIES})
-
-add_executable(mipi_service_node src/mipi_service_node.cpp)
-target_link_libraries(mipi_service_node ${catkin_LIBRARIES})
-add_dependencies(mipi_service_node mipi_service_node_gencpp)
-
 find_package(OpenCV REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS})
-target_link_libraries(mipi_cam_node ${OpenCV_LIBRARIES})
-target_link_libraries(mipi_cam_node_fast ${OpenCV_LIBRARIES})
-target_link_libraries(mipi_service_node ${OpenCV_LIBRARIES})
+
+add_executable(mipi_cam_node src/cameraNode.cpp)
+target_link_libraries(mipi_cam_node 
+          ${catkin_LIBRARIES}
+          ${OpenCV_LIBRARIES}
+)
+
+add_executable(mipi_service_node src/laser_calib/mipi_service_node.cpp)
+add_dependencies(mipi_service_node  ${catkin_EXPORTED_TARGETS})
+target_link_libraries(mipi_service_node 
+          ${catkin_LIBRARIES}
+          ${OpenCV_LIBRARIES}
+)
+
+add_executable(mipi_sampler_driver_node src/mipi_sampler_driver.cpp)
+add_dependencies(mipi_sampler_driver_node  ${catkin_EXPORTED_TARGETS})
+target_link_libraries(mipi_sampler_driver_node 
+          ${catkin_LIBRARIES}
+          ${OpenCV_LIBRARIES}
+)

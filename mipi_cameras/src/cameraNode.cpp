@@ -13,12 +13,12 @@ int main(int argc, char** argv) {
 	ros::init(argc, argv, "mipi_cam_node");
 	ros::NodeHandle nh("~");
 	int width, height;
-	nh.param("width", width, 1280);
-	nh.param("height", height, 720);
+	nh.param("width", width, 640);
+	nh.param("height", height, 480);
 
-	std::string pipeline0 = "nvarguscamerasrc sensor-id=" + std::to_string(0) + " ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) + ", framerate=6/1" + " ! nvvidconv flip-method=0 ! video/x-raw, format=(string)I420 ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
+	std::string pipeline0 = "nvarguscamerasrc sensor-id=" + std::to_string(0) + " ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) + ", framerate=60/1" + " ! nvvidconv flip-method=0 ! video/x-raw, format=(string)I420 ! videoconvert ! video/x-raw, format=(string)BGR ! appsink max-buffers=1 drop=True";
 
-	std::string pipeline1 = "nvarguscamerasrc sensor-id=" + std::to_string(1) + " ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) + ", framerate=6/1" + " ! nvvidconv flip-method=0 ! video/x-raw, format=(string)I420 ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
+	std::string pipeline1 = "nvarguscamerasrc sensor-id=" + std::to_string(1) + " ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) + ", framerate=60/1" + " ! nvvidconv flip-method=0 ! video/x-raw, format=(string)I420 ! videoconvert ! video/x-raw, format=(string)BGR ! appsink max-buffers=1 drop=True";
 
 	std::cout << "pipeline0: " << pipeline0 << std::endl;
 	std::cout << "pipeline1: " << pipeline1 << std::endl;
@@ -30,43 +30,48 @@ int main(int argc, char** argv) {
         	std::cout << "VideoCapture or VideoWriter not opened" << std::endl;
         	exit(-1);
     	}
+    	
+	cv::Mat frame0, frame1;
+	ros::Publisher lens_pub0 = nh.advertise<sensor_msgs::Image>("/stereo/left/image_raw", 0);
+	ros::Publisher lens_pub1 = nh.advertise<sensor_msgs::Image>("/stereo/right/image_raw", 0);
+	bool success0 = false;
+	bool success1 = false;
 
-    	cv::Mat frame0, frame1;
-	ros::Publisher lens_pub0 = nh.advertise<sensor_msgs::Image>("/mipi/cam0", 1);
-	ros::Publisher lens_pub1 = nh.advertise<sensor_msgs::Image>("/mipi/cam1", 1);
     	while(ros::ok()) {
-		cap0.read(frame0);
-		if(!frame0.empty()) 
-		{
-            		//cv::Mat gray0;
-            		//cv::cvtColor(frame0, gray0, CV_BGR2GRAY);
-			cv_bridge::CvImage out_msg;
-			out_msg.encoding = sensor_msgs::image_encodings::BGR8;
-			//out_msg.image = gray0;
-			out_msg.image = frame0;
-			out_msg.header.frame_id = "cam_left";
-			out_msg.header.stamp = ros::Time::now();
-			//cv::imshow("frame", frame);
-			//cv::waitKey(2);
-			lens_pub0.publish(out_msg.toImageMsg());
-		}
-		cap1.read(frame1);
-		if(!frame1.empty()) {
-			//cv::Mat gray1;
-		    	//cv::cvtColor(frame1, gray1, CV_BGR2GRAY);
-			cv_bridge::CvImage out_msg;
-			out_msg.encoding = sensor_msgs::image_encodings::BGR8;
-			//out_msg.image = gray1;
-			out_msg.image = frame1;
-			out_msg.header.frame_id = "cam_right";
-			out_msg.header.stamp = ros::Time::now();
-			//cv::imshow("frame", frame);
-			//cv::waitKey(2);
 
-			lens_pub1.publish(out_msg.toImageMsg());
+    		// grab left image and store time of grab
+			success0 = cap0.grab();
+			ros::Time time0 = ros::Time::now();
+
+    		// grab right image and store time of grab
+			success1 = cap1.grab();
+			ros::Time time1 = ros::Time::now();
+			if (success0 and success1)
+			{
+				// retrieve image data
+				cap0.retrieve(frame0);
+				cap1.retrieve(frame1);
+
+				// store in cv_bridge message
+				cv_bridge::CvImage out_msg0;
+				out_msg0.encoding = sensor_msgs::image_encodings::BGR8;
+				out_msg0.image = frame0;
+				out_msg0.header.frame_id = "left_cam";
+				out_msg0.header.stamp = time0;
+				cv_bridge::CvImage out_msg1;
+				out_msg1.encoding = sensor_msgs::image_encodings::BGR8;
+				out_msg1.image = frame1;
+				out_msg1.header.frame_id = "right_cam";
+				out_msg1.header.stamp = time1;
+
+				// convert to ROS and publish
+				lens_pub0.publish(out_msg0.toImageMsg());
+				lens_pub1.publish(out_msg1.toImageMsg());
 			}
 	}
-	ros::spin();
+	
+	cap0.release();
+	cap1.release();
 	return 0;
 }
 
