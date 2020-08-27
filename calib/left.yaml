@@ -1,0 +1,26 @@
+image_width: 640
+image_height: 480
+camera_name: mipi_left
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [ 514.58479,    0.     ,  320.65952,
+            0.     ,  686.30084,  250.66804,
+            0.     ,    0.     ,    1.     ]
+camera_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.334750, 0.123483, -0.000022, 0.000525, 0.000000]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [ 0.99999653,  0.00162611, -0.0020708 ,
+         -0.0016234 ,  0.99999782,  0.00131101,
+          0.00207292, -0.00130765,  0.999997  ]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [ 664.79926,    0.     ,  327.82222,    0.     ,
+            0.     ,  664.79926,  247.93789,    0.     ,
+            0.     ,    0.     ,    1.     ,    0.     ]
