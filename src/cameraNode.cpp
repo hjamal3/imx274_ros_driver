@@ -5,7 +5,6 @@
 #include <opencv2/highgui.hpp>
 #include "imx274_ros_driver/camera.h"
 #include <cv_bridge/cv_bridge.h>
-#include <camera_info_manager/camera_info_manager.h>
 
 cv::VideoCapture cap0;
 cv::VideoCapture cap1;
@@ -75,11 +74,10 @@ int main(int argc, char** argv) {
 	/* Camera grabs latest data periodically. 100 hz. */
 	ros::Timer timer = nh.createTimer(ros::Duration(1./rate), timer_callback);
 
-	std::string pipeline0 = "nvarguscamerasrc gainrange='1.00 10.00' ispdigitalgainrange='1.00 1.00' "
-    "sensor-id=" + std::to_string(0) + " ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) + ", framerate=60/1" + " ! nvvidconv flip-method=0 ! video/x-raw, format=(string)I420 ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
+	std::string pipeline0 = "nvarguscamerasrc sensor-id=" + std::to_string(0) + " ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) + ", framerate=30/1" + " ! nvvidconv flip-method=0 ! video/x-raw, format=(string)I420 ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
 
-	std::string pipeline1 = "nvarguscamerasrc gainrange='1.00 10.00' ispdigitalgainrange='1.00 1.00' "
-    "sensor-id=" + std::to_string(1) + " ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) + ", framerate=60/1" + " ! nvvidconv flip-method=0 ! video/x-raw, format=(string)I420 ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
+	std::string pipeline1 = "nvarguscamerasrc sensor-id=" + std::to_string(1) + " ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) + ", framerate=30/1" + " ! nvvidconv flip-method=0 ! video/x-raw, format=(string)I420 ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
+
 
 	std::cout << "pipeline0: " << pipeline0 << std::endl;
 	std::cout << "pipeline1: " << pipeline1 << std::endl;
