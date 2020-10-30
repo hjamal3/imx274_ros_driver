@@ -6,6 +6,8 @@
 #include "imx274_ros_driver/camera.h"
 #include <cv_bridge/cv_bridge.h>
 
+#include "gpio.h"
+
 cv::VideoCapture cap0;
 cv::VideoCapture cap1;
 int counter = 0;
@@ -63,6 +65,9 @@ int main(int argc, char** argv) {
 	ros::init(argc, argv, "mipi_service_node");
 	ros::NodeHandle nh;
 
+	gpio_export(230);
+	gpio_set_dir(230, 1);
+
 	int width, height, rate;
 	nh.param("width", width, 640);
 	nh.param("height", height, 480);
@@ -74,9 +79,9 @@ int main(int argc, char** argv) {
 	/* Camera grabs latest data periodically. 100 hz. */
 	ros::Timer timer = nh.createTimer(ros::Duration(1./rate), timer_callback);
 
-	std::string pipeline0 = "nvarguscamerasrc sensor-id=" + std::to_string(0) + " ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) + ", framerate=2/1" + " ! nvvidconv flip-method=0 ! video/x-raw, format=(string)I420 ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
+	std::string pipeline0 = "nvarguscamerasrc sensor-id=" + std::to_string(0) + " ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) + ", framerate=5/1" + " ! nvvidconv flip-method=0 ! video/x-raw, format=(string)I420 ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
 
-	std::string pipeline1 = "nvarguscamerasrc sensor-id=" + std::to_string(1) + " ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) + ", framerate=2/1" + " ! nvvidconv flip-method=0 ! video/x-raw, format=(string)I420 ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
+	std::string pipeline1 = "nvarguscamerasrc sensor-id=" + std::to_string(1) + " ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) + ", framerate=5/1" + " ! nvvidconv flip-method=0 ! video/x-raw, format=(string)I420 ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
 
 
 	std::cout << "pipeline0: " << pipeline0 << std::endl;
@@ -98,10 +103,12 @@ int main(int argc, char** argv) {
         	exit(-1);
     	}
 	while(ros::ok()) {
+	  gpio_set_value(230, 1);
 	  time0 = ros::Time::now();
 	  success0 = cap0.grab();
 	  time1 = ros::Time::now();
 	  success1 = cap1.grab();
+          gpio_set_value(230, 0);	  
 	  ros::spinOnce();
 	}
 	

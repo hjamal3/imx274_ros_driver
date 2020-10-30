@@ -49,7 +49,7 @@ target_link_libraries(mipi_cam_node
           ${OpenCV_LIBRARIES}
 )
 
-add_executable(test src/test.cpp src/gpio.cpp)
+add_executable(test src/test.cpp src/gpio.h src/gpio.cpp)
 target_link_libraries(test 
           ${catkin_LIBRARIES}
           ${OpenCV_LIBRARIES}
