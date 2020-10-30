@@ -49,6 +49,12 @@ target_link_libraries(mipi_cam_node
           ${OpenCV_LIBRARIES}
 )
 
+add_executable(test src/test.cpp src/gpio.cpp)
+target_link_libraries(test 
+          ${catkin_LIBRARIES}
+          ${OpenCV_LIBRARIES}
+)
+
 #add_executable(mipi_sampler_driver_node src/mipi_sampler_driver.cpp)
 #add_dependencies(mipi_sampler_driver_node  ${catkin_EXPORTED_TARGETS})
 #target_link_libraries(mipi_sampler_driver_node 
